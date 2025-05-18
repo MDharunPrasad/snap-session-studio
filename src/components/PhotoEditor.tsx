@@ -102,7 +102,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
       canvas.dispose();
     }
     
-    // Create a new canvas instance - updated to use fabric.Canvas directly
+    // Create a new canvas instance with fabric.Canvas (not FabricCanvas)
     const fabricCanvas = new fabric.Canvas(canvasRef.current, {
       width: isMobile ? 300 : 600,
       height: isMobile ? 225 : 450,
@@ -125,7 +125,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
     // Clear any existing objects before loading a new image
     canvas.clear();
     
-    // Load the image and add it to canvas - updated to use fabric.Image
+    // Load the image and add it to canvas
     fabric.Image.fromURL(imageUrl, (fabricImg) => {
       // Calculate aspect ratio to fit within canvas
       const imgWidth = fabricImg.width || 0;

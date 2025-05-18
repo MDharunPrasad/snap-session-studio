@@ -43,7 +43,7 @@ const Header = () => {
                   onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4 mr-1" />
-                  <span>Logout</span>
+                  <span className="block">Logout</span>
                 </Button>
               )}
               
@@ -97,7 +97,7 @@ const Header = () => {
                     className="text-white hover:bg-white/20"
                   >
                     <Settings className="h-4 w-4 mr-1" />
-                    Settings
+                    <span className="block">Settings</span>
                   </Button>
                 </Link>
                 <Button 
@@ -106,7 +106,7 @@ const Header = () => {
                   onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4 mr-1" />
-                  Logout
+                  <span className="block">Logout</span>
                 </Button>
               </div>
             ) : (
