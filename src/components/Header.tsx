@@ -36,8 +36,8 @@ const Header: React.FC = () => {
         ) : (
           <Link to="/login">
             <Button 
-              variant="outline" 
-              className="text-white border-white hover:bg-white hover:text-photobooth-primary"
+              variant="secondary"
+              className="bg-white text-photobooth-primary hover:bg-gray-100 font-semibold shadow-md"
             >
               Login
             </Button>
