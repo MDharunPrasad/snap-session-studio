@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import fabric from 'fabric'; // Import fabric correctly
+import { fabric } from 'fabric'; // Correct import syntax for fabric.js
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -35,6 +35,7 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
   useEffect(() => {
     if (!canvasRef.current) return;
     
+    // Correct initialization for Fabric.js
     const fabricCanvas = new fabric.Canvas(canvasRef.current, {
       width: isMobile ? 300 : 600,
       height: isMobile ? 225 : 450,
