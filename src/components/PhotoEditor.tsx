@@ -1,5 +1,6 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Canvas as FabricCanvas, Image as FabricImage, filters } from 'fabric';
+import { fabric } from 'fabric';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -26,8 +27,32 @@ interface PhotoEditorProps {
   onCancel: () => void;
 }
 
+// Define interface for border types to fix TypeScript errors
+interface BorderType {
+  name: string;
+  width?: number;
+  color?: string;
+  shadow?: boolean;
+}
+
+// Define interface for filter types
+interface FilterSetting {
+  [key: string]: number;
+}
+
+interface FilterType {
+  name: string;
+  filter: FilterSetting[];
+}
+
+// Define interface for image size types
+interface ImageSizeType {
+  name: string;
+  scale: number;
+}
+
 // Predefined filters
-const FILTERS = {
+const FILTERS: Record<string, FilterType> = {
   none: { name: "None", filter: [] },
   vintage: { name: "Vintage", filter: [{ sepia: 0.5 }, { contrast: 0.2 }] },
   grayscale: { name: "B&W", filter: [{ grayscale: 1 }] },
@@ -37,7 +62,7 @@ const FILTERS = {
 };
 
 // Border styles
-const BORDERS = {
+const BORDERS: Record<string, BorderType> = {
   none: { name: "None" },
   thin: { name: "Thin", width: 5, color: "#000000" },
   thick: { name: "Thick", width: 20, color: "#000000" },
@@ -46,7 +71,7 @@ const BORDERS = {
 };
 
 // Image sizes
-const IMAGE_SIZES = {
+const IMAGE_SIZES: Record<string, ImageSizeType> = {
   small: { name: "Small", scale: 0.7 },
   medium: { name: "Medium", scale: 0.9 },
   large: { name: "Large", scale: 1.1 },
@@ -54,7 +79,7 @@ const IMAGE_SIZES = {
 
 const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [canvas, setCanvas] = useState<FabricCanvas | null>(null);
+  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeAdjustment, setActiveAdjustment] = useState<string | null>(null);
   const [adjustmentValues, setAdjustmentValues] = useState({
@@ -77,8 +102,8 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
       canvas.dispose();
     }
     
-    // Create a new canvas instance
-    const fabricCanvas = new FabricCanvas(canvasRef.current, {
+    // Create a new canvas instance - updated to use fabric.Canvas directly
+    const fabricCanvas = new fabric.Canvas(canvasRef.current, {
       width: isMobile ? 300 : 600,
       height: isMobile ? 225 : 450,
       backgroundColor: '#f3f3f3',
@@ -100,8 +125,8 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
     // Clear any existing objects before loading a new image
     canvas.clear();
     
-    // Load the image and add it to canvas
-    FabricImage.fromURL(imageUrl, (fabricImg) => {
+    // Load the image and add it to canvas - updated to use fabric.Image
+    fabric.Image.fromURL(imageUrl, (fabricImg) => {
       // Calculate aspect ratio to fit within canvas
       const imgWidth = fabricImg.width || 0;
       const imgHeight = fabricImg.height || 0;
@@ -116,7 +141,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
       }
       
       // Apply size adjustment
-      const sizeAdjustment = IMAGE_SIZES[activeSize as keyof typeof IMAGE_SIZES].scale;
+      const sizeAdjustment = IMAGE_SIZES[activeSize].scale;
       scaleFactor = scaleFactor * sizeAdjustment;
       
       fabricImg.scale(scaleFactor * 0.9);
@@ -153,13 +178,13 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
     
     const objects = canvas.getObjects();
     if (objects.length > 0) {
-      const img = objects[0] as FabricImage;
+      const img = objects[0] as fabric.Image;
       applyFiltersAndBorders(img);
     }
   }, [canvas, activeFilter, activeBorder, adjustmentValues]);
   
   // Apply filters and borders to image
-  const applyFiltersAndBorders = (img: FabricImage) => {
+  const applyFiltersAndBorders = (img: fabric.Image) => {
     if (!img) return;
     
     // Clear existing filters
@@ -167,51 +192,51 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
     
     // Apply adjustment filters
     if (adjustmentValues.brightness !== 0) {
-      img.filters.push(new filters.Brightness({
+      img.filters.push(new fabric.Image.filters.Brightness({
         brightness: adjustmentValues.brightness / 100
       }));
     }
     
     if (adjustmentValues.contrast !== 0) {
-      img.filters.push(new filters.Contrast({
+      img.filters.push(new fabric.Image.filters.Contrast({
         contrast: adjustmentValues.contrast / 100
       }));
     }
     
     if (adjustmentValues.saturation !== 0) {
-      img.filters.push(new filters.Saturation({
+      img.filters.push(new fabric.Image.filters.Saturation({
         saturation: adjustmentValues.saturation / 100
       }));
     }
     
     // Apply preset filter if selected
-    if (activeFilter !== "none" && FILTERS[activeFilter as keyof typeof FILTERS]) {
-      const filterSettings = FILTERS[activeFilter as keyof typeof FILTERS].filter;
+    if (activeFilter !== "none") {
+      const filterSettings = FILTERS[activeFilter].filter;
       
       filterSettings.forEach(setting => {
         const filterType = Object.keys(setting)[0];
-        const value = setting[filterType as keyof typeof setting];
+        const value = setting[filterType];
         
         switch(filterType) {
           case 'grayscale':
-            img.filters.push(new filters.Grayscale());
+            img.filters.push(new fabric.Image.filters.Grayscale());
             break;
           case 'sepia':
-            img.filters.push(new filters.Sepia());
+            img.filters.push(new fabric.Image.filters.Sepia());
             break;
           case 'brightness':
-            img.filters.push(new filters.Brightness({
-              brightness: value as number
+            img.filters.push(new fabric.Image.filters.Brightness({
+              brightness: value
             }));
             break;
           case 'contrast':
-            img.filters.push(new filters.Contrast({
-              contrast: value as number
+            img.filters.push(new fabric.Image.filters.Contrast({
+              contrast: value
             }));
             break;
           case 'saturation':
-            img.filters.push(new filters.Saturation({
-              saturation: value as number
+            img.filters.push(new fabric.Image.filters.Saturation({
+              saturation: value
             }));
             break;
         }
@@ -222,7 +247,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
     img.applyFilters();
     
     // Apply border if selected
-    const border = BORDERS[activeBorder as keyof typeof BORDERS];
+    const border = BORDERS[activeBorder];
     if (border && border.width) {
       img.set({
         stroke: border.color,
@@ -238,12 +263,12 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
     // Apply shadow if needed
     if (border && border.shadow) {
       img.set({
-        shadow: {
+        shadow: new fabric.Shadow({
           color: 'rgba(0,0,0,0.3)',
           blur: 10,
           offsetX: 5,
           offsetY: 5
-        }
+        })
       });
     } else {
       img.set({
@@ -320,7 +345,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
         setIsLoading(true);
         
         // Reloading the image
-        FabricImage.fromURL(imageUrl, (fabricImg) => {
+        fabric.Image.fromURL(imageUrl, (fabricImg) => {
           const imgWidth = fabricImg.width || 0;
           const imgHeight = fabricImg.height || 0;
           const imgAspect = imgWidth / imgHeight;
@@ -334,7 +359,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
           }
           
           // Apply size adjustment
-          const sizeAdjustment = IMAGE_SIZES[size as keyof typeof IMAGE_SIZES].scale;
+          const sizeAdjustment = IMAGE_SIZES[size].scale;
           scaleFactor = scaleFactor * sizeAdjustment;
           
           fabricImg.scale(scaleFactor * 0.9);
@@ -517,7 +542,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
                     <ImageIcon className="text-gray-400" size={24} />
                   </div>
                 </button>
-                <span className="text-xs text-gray-600">{FILTERS[filter as keyof typeof FILTERS].name}</span>
+                <span className="text-xs text-gray-600">{FILTERS[filter].name}</span>
               </div>
             ))}
           </div>
@@ -550,7 +575,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
                     </div>
                   </div>
                 </button>
-                <span className="text-xs text-gray-600 mt-1">{BORDERS[border as keyof typeof BORDERS].name}</span>
+                <span className="text-xs text-gray-600 mt-1">{BORDERS[border].name}</span>
               </div>
             ))}
           </div>
@@ -566,7 +591,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
               <div key={size} className="flex items-center space-x-2">
                 <RadioGroupItem value={size} id={`size-${size}`} />
                 <Label htmlFor={`size-${size}`} className="flex items-center">
-                  <span className="mr-2">{IMAGE_SIZES[size as keyof typeof IMAGE_SIZES].name}</span>
+                  <span className="mr-2">{IMAGE_SIZES[size].name}</span>
                   <span className="text-xs text-gray-500">
                     {size === 'small' ? '(70%)' : size === 'medium' ? '(90%)' : '(110%)'}
                   </span>
