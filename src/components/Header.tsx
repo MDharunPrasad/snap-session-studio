@@ -14,7 +14,7 @@ const Header: React.FC = () => {
   };
   
   return (
-    <header className="bg-photobooth-primary text-white py-3 px-4 md:px-6 flex justify-between items-center">
+    <header className="bg-photobooth-primary text-white py-3 px-4 md:px-6 flex justify-between items-center shadow-md">
       <div>
         <Link to="/" className="text-xl font-bold">PhotoBooth Software</Link>
       </div>
@@ -27,7 +27,7 @@ const Header: React.FC = () => {
             </span>
             <Button 
               variant="outline" 
-              className="text-white border-white hover:bg-white hover:text-photobooth-primary"
+              className="text-white border-white hover:bg-white hover:text-photobooth-primary font-semibold"
               onClick={handleLogout}
             >
               Logout
@@ -37,7 +37,8 @@ const Header: React.FC = () => {
           <Link to="/login">
             <Button 
               variant="secondary"
-              className="bg-white text-photobooth-primary hover:bg-gray-100 font-semibold shadow-md"
+              className="bg-white text-photobooth-primary hover:bg-gray-100 font-semibold shadow-md px-6 py-2"
+              size="lg"
             >
               Login
             </Button>

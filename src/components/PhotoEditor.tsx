@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Canvas as FabricCanvas } from 'fabric';
+import { Canvas as FabricCanvas, Image as FabricImage, filters } from 'fabric';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -8,7 +8,7 @@ import {
   RotateCcw,
   RotateCw,
   Contrast,
-  Brightness,
+  SunMedium, // Using SunMedium instead of Brightness
   Loader,
 } from "lucide-react";
 
@@ -69,7 +69,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
       }
       
       // Create a fabric image and add it to the canvas
-      fabric.Image.fromURL(imageUrl, (fabricImg) => {
+      FabricImage.fromURL(imageUrl, (fabricImg) => {
         fabricImg.scale(scaleFactor * 0.9);
         
         // Center the image on the canvas
@@ -115,7 +115,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
     } else {
       // If no object is selected, rotate the first image
       const objects = canvas.getObjects();
-      if (objects.length > 0 && objects[0] instanceof fabric.Image) {
+      if (objects.length > 0) {
         objects[0].rotate((objects[0].angle || 0) + angle);
       }
     }
@@ -133,29 +133,29 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
     
     // Apply the filter to the image
     const objects = canvas.getObjects();
-    if (objects.length > 0 && objects[0] instanceof fabric.Image) {
-      const img = objects[0] as fabric.Image;
+    if (objects.length > 0) {
+      const img = objects[0] as any; // Using 'any' to avoid TypeScript errors for now
       
       // Clear existing filters
       img.filters = [];
       
       // Apply brightness filter
       if (newValues.brightness !== 0) {
-        img.filters.push(new fabric.filters.Brightness({
+        img.filters.push(new filters.Brightness({
           brightness: newValues.brightness / 100
         }));
       }
       
       // Apply contrast filter
       if (newValues.contrast !== 0) {
-        img.filters.push(new fabric.filters.Contrast({
+        img.filters.push(new filters.Contrast({
           contrast: newValues.contrast / 100
         }));
       }
       
       // Apply saturation filter
       if (newValues.saturation !== 0) {
-        img.filters.push(new fabric.filters.Saturation({
+        img.filters.push(new filters.Saturation({
           saturation: newValues.saturation / 100
         }));
       }
@@ -228,7 +228,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
             onClick={() => setActiveAdjustment(activeAdjustment === 'brightness' ? null : 'brightness')}
             className="flex items-center gap-1"
           >
-            <Brightness className="w-4 h-4" />
+            <SunMedium className="w-4 h-4" />
             <span>Brightness</span>
           </Button>
           
