@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { usePhotoBoothContext } from '@/context/PhotoBoothContext';
-import { Menu, X, Settings, CircleUser, Package } from 'lucide-react';
+import { Menu, X, Settings, CircleUser, Package, LogOut } from 'lucide-react';
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Header = () => {
@@ -34,13 +34,27 @@ const Header = () => {
         
         {isMobile ? (
           <>
-            <button 
-              onClick={toggleMenu} 
-              className="text-white hover:text-blue-200 transition-colors"
-              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            <div className="flex items-center gap-2">
+              {currentUser && (
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="flex items-center text-white hover:bg-white/20"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4 mr-1" />
+                  <span>Logout</span>
+                </Button>
+              )}
+              
+              <button 
+                onClick={toggleMenu} 
+                className="text-white hover:text-blue-200 transition-colors"
+                aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
             
             {isMenuOpen && (
               <div className="absolute top-14 right-0 left-0 bg-white shadow-lg z-50 animate-in fade-in slide-in-from-top-5">
@@ -55,12 +69,6 @@ const Header = () => {
                         <Settings className="h-5 w-5" />
                         <span>Profile Settings</span>
                       </Link>
-                      <button 
-                        className="p-2 mt-2 bg-photobooth-primary text-white rounded hover:bg-photobooth-primary-dark transition-colors text-left"
-                        onClick={handleLogout}
-                      >
-                        Logout
-                      </button>
                     </>
                   ) : (
                     <Link 
@@ -97,6 +105,7 @@ const Header = () => {
                   className="text-white border-white hover:bg-white hover:text-photobooth-primary font-semibold"
                   onClick={handleLogout}
                 >
+                  <LogOut className="h-4 w-4 mr-1" />
                   Logout
                 </Button>
               </div>
