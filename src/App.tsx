@@ -13,6 +13,7 @@ import BundlesPage from "./pages/BundlesPage";
 import EditorPage from "./pages/EditorPage";
 import CartPage from "./pages/CartPage";
 import SessionViewerPage from "./pages/SessionViewerPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/editor" element={<EditorPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/session/:id" element={<SessionViewerPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

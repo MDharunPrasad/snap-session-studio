@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Canvas as FabricCanvas, Image as FabricImage, filters } from 'fabric';
+import fabric from 'fabric'; // Import fabric correctly
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -8,9 +8,10 @@ import {
   RotateCcw,
   RotateCw,
   Contrast,
-  SunMedium, // Using SunMedium instead of Brightness
+  SunMedium,
   Loader,
 } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PhotoEditorProps {
   imageUrl: string;
@@ -18,24 +19,25 @@ interface PhotoEditorProps {
   onCancel: () => void;
 }
 
-const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [canvas, setCanvas] = useState<FabricCanvas | null>(null);
+const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
+  const canvasRef = useRef(null);
+  const [canvas, setCanvas] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeAdjustment, setActiveAdjustment] = useState<string | null>(null);
+  const [activeAdjustment, setActiveAdjustment] = useState(null);
   const [adjustmentValues, setAdjustmentValues] = useState({
     brightness: 0,
     contrast: 0,
     saturation: 0,
   });
+  const isMobile = useIsMobile();
   
   // Initialize the canvas
   useEffect(() => {
     if (!canvasRef.current) return;
     
-    const fabricCanvas = new FabricCanvas(canvasRef.current, {
-      width: 600,
-      height: 450,
+    const fabricCanvas = new fabric.Canvas(canvasRef.current, {
+      width: isMobile ? 300 : 600,
+      height: isMobile ? 225 : 450,
       backgroundColor: '#f3f3f3',
     });
     
@@ -44,7 +46,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
     return () => {
       fabricCanvas.dispose();
     };
-  }, []);
+  }, [isMobile]);
   
   // Load the image into the canvas
   useEffect(() => {
@@ -59,25 +61,25 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
     img.onload = () => {
       // Calculate aspect ratio to fit within canvas
       const imgAspect = img.width / img.height;
-      const canvasAspect = canvas.width! / canvas.height!;
+      const canvasAspect = canvas.width / canvas.height;
       
       let scaleFactor = 1;
       if (imgAspect > canvasAspect) {
-        scaleFactor = canvas.width! / img.width;
+        scaleFactor = canvas.width / img.width;
       } else {
-        scaleFactor = canvas.height! / img.height;
+        scaleFactor = canvas.height / img.height;
       }
       
       // Create a fabric image and add it to the canvas
-      FabricImage.fromURL(imageUrl, (fabricImg) => {
+      fabric.Image.fromURL(imageUrl, (fabricImg) => {
         fabricImg.scale(scaleFactor * 0.9);
         
         // Center the image on the canvas
         fabricImg.set({
           originX: 'center',
           originY: 'center',
-          left: canvas.width! / 2,
-          top: canvas.height! / 2,
+          left: canvas.width / 2,
+          top: canvas.height / 2,
         });
         
         canvas.clear();
@@ -104,7 +106,7 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
   };
   
   // Handle image rotation
-  const handleRotate = (direction: 'clockwise' | 'counterclockwise') => {
+  const handleRotate = (direction) => {
     if (!canvas) return;
     
     const angle = direction === 'clockwise' ? 90 : -90;
@@ -124,38 +126,38 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
   };
   
   // Handle slider adjustments
-  const handleAdjustmentChange = (value: number[]) => {
+  const handleAdjustmentChange = (value) => {
     if (!activeAdjustment || !canvas) return;
     
     const newValues = { ...adjustmentValues };
-    newValues[activeAdjustment as keyof typeof adjustmentValues] = value[0];
+    newValues[activeAdjustment] = value[0];
     setAdjustmentValues(newValues);
     
     // Apply the filter to the image
     const objects = canvas.getObjects();
     if (objects.length > 0) {
-      const img = objects[0] as any; // Using 'any' to avoid TypeScript errors for now
+      const img = objects[0];
       
       // Clear existing filters
       img.filters = [];
       
       // Apply brightness filter
       if (newValues.brightness !== 0) {
-        img.filters.push(new filters.Brightness({
+        img.filters.push(new fabric.Image.filters.Brightness({
           brightness: newValues.brightness / 100
         }));
       }
       
       // Apply contrast filter
       if (newValues.contrast !== 0) {
-        img.filters.push(new filters.Contrast({
+        img.filters.push(new fabric.Image.filters.Contrast({
           contrast: newValues.contrast / 100
         }));
       }
       
       // Apply saturation filter
       if (newValues.saturation !== 0) {
-        img.filters.push(new filters.Saturation({
+        img.filters.push(new fabric.Image.filters.Saturation({
           saturation: newValues.saturation / 100
         }));
       }
@@ -195,56 +197,62 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
       </div>
       
       <div className="mb-4">
-        <div className="flex flex-wrap gap-2 mb-3">
+        <div className={`flex ${isMobile ? 'flex-wrap' : ''} gap-2 mb-3`}>
           <Button 
             variant={activeAdjustment === 'crop' ? 'default' : 'outline'} 
             onClick={handleCrop}
             className="flex items-center gap-1"
+            size={isMobile ? 'sm' : 'default'}
           >
             <Crop className="w-4 h-4" />
-            <span>Crop</span>
+            <span>{isMobile ? '' : 'Crop'}</span>
           </Button>
           
           <Button 
             variant="outline" 
             onClick={() => handleRotate('counterclockwise')}
             className="flex items-center gap-1"
+            size={isMobile ? 'sm' : 'default'}
           >
             <RotateCcw className="w-4 h-4" />
-            <span>Rotate Left</span>
+            <span>{isMobile ? '' : 'Rotate Left'}</span>
           </Button>
           
           <Button 
             variant="outline" 
             onClick={() => handleRotate('clockwise')}
             className="flex items-center gap-1"
+            size={isMobile ? 'sm' : 'default'}
           >
             <RotateCw className="w-4 h-4" />
-            <span>Rotate Right</span>
+            <span>{isMobile ? '' : 'Rotate Right'}</span>
           </Button>
           
           <Button 
             variant={activeAdjustment === 'brightness' ? 'default' : 'outline'} 
             onClick={() => setActiveAdjustment(activeAdjustment === 'brightness' ? null : 'brightness')}
             className="flex items-center gap-1"
+            size={isMobile ? 'sm' : 'default'}
           >
             <SunMedium className="w-4 h-4" />
-            <span>Brightness</span>
+            <span>{isMobile ? '' : 'Brightness'}</span>
           </Button>
           
           <Button 
             variant={activeAdjustment === 'contrast' ? 'default' : 'outline'} 
             onClick={() => setActiveAdjustment(activeAdjustment === 'contrast' ? null : 'contrast')}
             className="flex items-center gap-1"
+            size={isMobile ? 'sm' : 'default'}
           >
             <Contrast className="w-4 h-4" />
-            <span>Contrast</span>
+            <span>{isMobile ? '' : 'Contrast'}</span>
           </Button>
           
           <Button 
             variant={activeAdjustment === 'saturation' ? 'default' : 'outline'} 
             onClick={() => setActiveAdjustment(activeAdjustment === 'saturation' ? null : 'saturation')}
             className="flex items-center gap-1"
+            size={isMobile ? 'sm' : 'default'}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2v5" />
@@ -254,17 +262,17 @@ const PhotoEditor: React.FC<PhotoEditorProps> = ({ imageUrl, onSave, onCancel })
               <path d="M5 18l3-5" />
               <path d="M5 6l3 5" />
             </svg>
-            <span>Saturation</span>
+            <span>{isMobile ? '' : 'Saturation'}</span>
           </Button>
         </div>
         
         {activeAdjustment && (
           <div className="py-2">
             <label className="block text-sm font-medium mb-1 capitalize">
-              {activeAdjustment} ({adjustmentValues[activeAdjustment as keyof typeof adjustmentValues]})
+              {activeAdjustment} ({adjustmentValues[activeAdjustment]})
             </label>
             <Slider
-              defaultValue={[adjustmentValues[activeAdjustment as keyof typeof adjustmentValues]]}
+              defaultValue={[adjustmentValues[activeAdjustment]]}
               min={-100}
               max={100}
               step={1}
