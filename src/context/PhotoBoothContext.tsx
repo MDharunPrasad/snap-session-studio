@@ -9,13 +9,6 @@ interface User {
   role: 'Admin' | 'Cameraman';
 }
 
-interface Photo {
-  id: string;
-  url: string;
-  edited: boolean;
-  editedUrl?: string;
-}
-
 interface Session {
   id: string;
   name: string;

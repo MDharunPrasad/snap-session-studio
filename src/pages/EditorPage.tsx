@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -151,7 +150,7 @@ const EditorPage = () => {
   let placeholderCount: number;
   
   if (typeof bundleCount === 'string') {
-    placeholderCount = bundleCount === "unlimited" ? 999 : parseInt(bundleCount, 10);
+    placeholderCount = bundleCount === "unlimited" ? 999 : parseInt(bundleCount);
   } else {
     placeholderCount = bundleCount;
   }
@@ -162,8 +161,8 @@ const EditorPage = () => {
   const sortedPhotos = currentSession.photos ? 
     [...currentSession.photos].sort((a, b) => {
       // Convert timestamp strings to Date objects for comparison
-      const dateA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-      const dateB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+      const dateA = new Date(a.timestamp || '').getTime();
+      const dateB = new Date(b.timestamp || '').getTime();
       return dateB - dateA;
     }) : [];
 
