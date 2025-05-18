@@ -4,6 +4,6 @@ export interface Photo {
   url: string;
   edited: boolean;
   editedUrl?: string;
-  timestamp?: string;
+  timestamp: string;
   lastEdited?: string;
 }

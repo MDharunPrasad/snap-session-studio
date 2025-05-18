@@ -1,5 +1,5 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Photo } from '@/models/PhotoTypes';
 
 // Types
 interface User {
@@ -25,7 +25,7 @@ interface Session {
   photos: Photo[];
   bundle?: {
     name: string;
-    count: number;
+    count: number | string;
     price: number;
   };
 }
@@ -40,9 +40,10 @@ interface PhotoBoothContextType {
   createSession: (name: string, location: string) => Session;
   deleteSession: (id: string) => void;
   setCurrentSession: (session: Session | null) => void;
-  selectBundle: (bundle: { name: string; count: number; price: number }) => void;
+  selectBundle: (bundle: { name: string; count: number | string; price: number }) => void;
   addPhoto: (sessionId: string, photo: Omit<Photo, 'id'>) => void;
   updatePhoto: (sessionId: string, photoId: string, updates: Partial<Photo>) => void;
+  deletePhoto: (sessionId: string, photoId: string) => void;
   completeSession: (sessionId: string) => void;
 }
 
@@ -198,7 +199,7 @@ export const PhotoBoothProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
-  const selectBundle = (bundle: { name: string; count: number; price: number }) => {
+  const selectBundle = (bundle: { name: string; count: number | string; price: number }) => {
     if (currentSession) {
       const updatedSession = { ...currentSession, bundle };
       
@@ -262,6 +263,27 @@ export const PhotoBoothProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
+  const deletePhoto = (sessionId: string, photoId: string) => {
+    setSessions(prevSessions => 
+      prevSessions.map(session => {
+        if (session.id === sessionId) {
+          return {
+            ...session,
+            photos: session.photos.filter(photo => photo.id !== photoId)
+          };
+        }
+        return session;
+      })
+    );
+    
+    if (currentSession?.id === sessionId) {
+      setCurrentSession({
+        ...currentSession,
+        photos: currentSession.photos.filter(photo => photo.id !== photoId)
+      });
+    }
+  };
+
   const completeSession = (sessionId: string) => {
     setSessions(prevSessions => 
       prevSessions.map(session => {
@@ -296,6 +318,7 @@ export const PhotoBoothProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     selectBundle,
     addPhoto,
     updatePhoto,
+    deletePhoto,
     completeSession
   };
 

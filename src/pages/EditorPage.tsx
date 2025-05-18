@@ -11,11 +11,12 @@ import PhotoEditor from '@/components/PhotoEditor';
 import { Plus, Edit, ArrowLeft, ArrowRight, Image, Clock, Trash2 } from 'lucide-react';
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Photo } from '@/models/PhotoTypes';
 
 const EditorPage = () => {
   const { currentSession, addPhoto, updatePhoto, deletePhoto } = usePhotoBoothContext();
-  const [uploadedPhotos, setUploadedPhotos] = useState([]);
-  const [editingPhotoIndex, setEditingPhotoIndex] = useState(null);
+  const [uploadedPhotos, setUploadedPhotos] = useState<string[]>([]);
+  const [editingPhotoIndex, setEditingPhotoIndex] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("photos");
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const EditorPage = () => {
     }
   }, [currentSession, navigate, toast]);
 
-  const handleFileUpload = (e, index) => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const files = e.target.files;
     
     if (files && files.length > 0) {
@@ -75,11 +76,11 @@ const EditorPage = () => {
     }
   };
 
-  const handleEditPhoto = (index) => {
+  const handleEditPhoto = (index: number) => {
     setEditingPhotoIndex(index);
   };
   
-  const handleSaveEdit = (editedImageUrl) => {
+  const handleSaveEdit = (editedImageUrl: string) => {
     if (editingPhotoIndex === null || !currentSession) return;
     
     // Update the local state
@@ -109,7 +110,7 @@ const EditorPage = () => {
     setEditingPhotoIndex(null);
   };
   
-  const handleDeletePhoto = (index) => {
+  const handleDeletePhoto = (index: number) => {
     if (!currentSession) return;
     
     // Get the photo ID
@@ -147,13 +148,24 @@ const EditorPage = () => {
 
   // Create placeholders based on bundle size
   const bundleCount = currentSession.bundle.count;
-  const placeholders = Array(typeof bundleCount === 'string' ? 999 : parseInt(bundleCount, 10)).fill(null);
+  let placeholderCount: number;
+  
+  if (typeof bundleCount === 'string') {
+    placeholderCount = bundleCount === "unlimited" ? 999 : parseInt(bundleCount, 10);
+  } else {
+    placeholderCount = bundleCount;
+  }
+  
+  const placeholders = Array(placeholderCount).fill(null);
   
   // Sort photos by upload time for history view
   const sortedPhotos = currentSession.photos ? 
-    [...currentSession.photos].sort((a, b) => 
-      new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
-    ) : [];
+    [...currentSession.photos].sort((a, b) => {
+      // Convert timestamp strings to Date objects for comparison
+      const dateA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+      const dateB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+      return dateB - dateA;
+    }) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50 flex flex-col">
