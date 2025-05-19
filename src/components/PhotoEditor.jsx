@@ -4,13 +4,12 @@ import { fabric } from 'fabric';
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
-  Crop,
   RotateCcw,
   RotateCw,
   Contrast,
   SunMedium,
   Loader,
-  Image as ImageIcon,
+  ImageIcon,
   Square,
   Film,
   LayoutGrid,
@@ -31,7 +30,7 @@ const sampleImages = {
   cool: "https://images.unsplash.com/photo-1582562124811-c09040d0a901?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjN8fHBldHN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=100&h=100&q=80",
 };
 
-// Define interface for border types to fix TypeScript errors
+// Border styles
 const BORDERS = {
   none: { name: "None" },
   thin: { name: "Thin", width: 5, color: "#000000" },
@@ -76,7 +75,7 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
   const [cropRect, setCropRect] = useState(null);
   const isMobile = useIsMobile();
   
-  // Initialize the canvas
+  // Initialize the canvas - Fixed to ensure canvas is initialized only after DOM is ready
   useEffect(() => {
     if (!canvasRef.current) return;
     
@@ -85,74 +84,95 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
       canvas.dispose();
     }
     
-    // Create a new canvas instance
-    const fabricCanvas = new fabric.Canvas(canvasRef.current, {
-      width: isMobile ? 300 : 600,
-      height: isMobile ? 225 : 450,
-      backgroundColor: '#f3f3f3',
-    });
-    
-    setCanvas(fabricCanvas);
+    // Delay canvas creation until next frame to ensure DOM is ready
+    const timer = setTimeout(() => {
+      try {
+        const fabricCanvas = new fabric.Canvas(canvasRef.current, {
+          width: isMobile ? 300 : 600,
+          height: isMobile ? 225 : 450,
+          backgroundColor: '#f3f3f3',
+        });
+        
+        setCanvas(fabricCanvas);
+        setIsLoading(false);
+      } catch (err) {
+        console.error("Error initializing canvas:", err);
+      }
+    }, 0);
     
     return () => {
-      fabricCanvas.dispose();
+      clearTimeout(timer);
+      if (canvas) {
+        canvas.dispose();
+      }
     };
   }, [isMobile]);
   
-  // Load the image into the canvas
+  // Load the image into the canvas - Only run when canvas is ready
   useEffect(() => {
     if (!canvas || !imageUrl) return;
     
     setIsLoading(true);
     
     // Clear any existing objects before loading a new image
-    canvas.clear();
-    
-    // Load the image and add it to canvas
-    fabric.Image.fromURL(imageUrl, (fabricImg) => {
-      const imgWidth = fabricImg.width || 0;
-      const imgHeight = fabricImg.height || 0;
-      const imgAspect = imgWidth / imgHeight;
-      const canvasAspect = canvas.width / canvas.height;
+    try {
+      canvas.clear();
       
-      let scaleFactor = 1;
-      if (imgAspect > canvasAspect) {
-        scaleFactor = canvas.width / imgWidth;
-      } else {
-        scaleFactor = canvas.height / imgHeight;
-      }
-      
-      // Apply size adjustment based on selected size
-      const sizeSettings = IMAGE_SIZES[activeSize];
-      const sizeAdjustment = sizeSettings.scale;
-      scaleFactor = scaleFactor * sizeAdjustment;
-      
-      fabricImg.scale(scaleFactor * 0.9);
-      
-      // Center the image on the canvas
-      fabricImg.set({
-        originX: 'center',
-        originY: 'center',
-        left: canvas.width / 2,
-        top: canvas.height / 2,
-      });
-      
-      // Add to upload history
-      const historyItem = {
-        url: imageUrl,
-        date: new Date().toLocaleString(),
-      };
-      setUploadHistory(prev => [...prev, historyItem]);
-      
-      // Add the image to the canvas
-      canvas.add(fabricImg);
-      
-      // Apply any filters or borders
-      applyFiltersAndBorders(fabricImg);
-      
-      canvas.renderAll();
+      // Load the image and add it to canvas
+      fabric.Image.fromURL(imageUrl, (fabricImg) => {
+        if (!canvas || !fabricImg) return; // Safety check
+        
+        const imgWidth = fabricImg.width || 0;
+        const imgHeight = fabricImg.height || 0;
+        const imgAspect = imgWidth / imgHeight;
+        const canvasAspect = canvas.width / canvas.height;
+        
+        let scaleFactor = 1;
+        if (imgAspect > canvasAspect) {
+          scaleFactor = canvas.width / imgWidth;
+        } else {
+          scaleFactor = canvas.height / imgHeight;
+        }
+        
+        // Apply size adjustment based on selected size
+        const sizeSettings = IMAGE_SIZES[activeSize];
+        const sizeAdjustment = sizeSettings.scale;
+        scaleFactor = scaleFactor * sizeAdjustment;
+        
+        fabricImg.scale(scaleFactor * 0.9);
+        
+        // Center the image on the canvas
+        fabricImg.set({
+          originX: 'center',
+          originY: 'center',
+          left: canvas.width / 2,
+          top: canvas.height / 2,
+        });
+        
+        // Add to upload history
+        const historyItem = {
+          url: imageUrl,
+          date: new Date().toLocaleString(),
+        };
+        setUploadHistory(prev => [...prev, historyItem]);
+        
+        // Add the image to the canvas
+        canvas.add(fabricImg);
+        
+        // Apply any filters or borders
+        applyFiltersAndBorders(fabricImg);
+        
+        // Ensure canvas is rendered
+        if (canvas) {
+          canvas.renderAll();
+        }
+        
+        setIsLoading(false);
+      }, { crossOrigin: 'anonymous' });
+    } catch (err) {
+      console.error("Error loading image:", err);
       setIsLoading(false);
-    }, { crossOrigin: 'anonymous' });
+    }
   }, [canvas, imageUrl, activeSize]);
   
   // Apply filters and borders when they change
@@ -160,7 +180,7 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
     if (!canvas) return;
     
     const objects = canvas.getObjects();
-    if (objects.length > 0) {
+    if (objects && objects.length > 0) {
       const img = objects[0];
       applyFiltersAndBorders(img);
     }
@@ -168,105 +188,109 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
   
   // Apply filters and borders to image
   const applyFiltersAndBorders = (img) => {
-    if (!img) return;
+    if (!img || !canvas) return;
     
-    // Clear existing filters
-    img.filters = [];
-    
-    // Apply adjustment filters
-    if (adjustmentValues.brightness !== 0) {
-      img.filters.push(new fabric.Image.filters.Brightness({
-        brightness: adjustmentValues.brightness / 100
-      }));
-    }
-    
-    if (adjustmentValues.contrast !== 0) {
-      img.filters.push(new fabric.Image.filters.Contrast({
-        contrast: adjustmentValues.contrast / 100
-      }));
-    }
-    
-    if (adjustmentValues.saturation !== 0) {
-      img.filters.push(new fabric.Image.filters.Saturation({
-        saturation: adjustmentValues.saturation / 100
-      }));
-    }
-    
-    // Apply preset filter if selected
-    if (activeFilter !== "none") {
-      const filterSettings = FILTERS[activeFilter].filter;
+    try {
+      // Clear existing filters
+      img.filters = [];
       
-      filterSettings.forEach(setting => {
-        const filterType = Object.keys(setting)[0];
-        const value = setting[filterType];
+      // Apply adjustment filters
+      if (adjustmentValues.brightness !== 0) {
+        img.filters.push(new fabric.Image.filters.Brightness({
+          brightness: adjustmentValues.brightness / 100
+        }));
+      }
+      
+      if (adjustmentValues.contrast !== 0) {
+        img.filters.push(new fabric.Image.filters.Contrast({
+          contrast: adjustmentValues.contrast / 100
+        }));
+      }
+      
+      if (adjustmentValues.saturation !== 0) {
+        img.filters.push(new fabric.Image.filters.Saturation({
+          saturation: adjustmentValues.saturation / 100
+        }));
+      }
+      
+      // Apply preset filter if selected
+      if (activeFilter !== "none") {
+        const filterSettings = FILTERS[activeFilter].filter;
         
-        switch(filterType) {
-          case 'grayscale':
-            img.filters.push(new fabric.Image.filters.Grayscale());
-            break;
-          case 'sepia':
-            img.filters.push(new fabric.Image.filters.Sepia());
-            break;
-          case 'brightness':
-            img.filters.push(new fabric.Image.filters.Brightness({
-              brightness: value
-            }));
-            break;
-          case 'contrast':
-            img.filters.push(new fabric.Image.filters.Contrast({
-              contrast: value
-            }));
-            break;
-          case 'saturation':
-            img.filters.push(new fabric.Image.filters.Saturation({
-              saturation: value
-            }));
-            break;
-          default:
-            break;
-        }
-      });
-    }
-    
-    // Apply filters to the image
-    img.applyFilters();
-    
-    // Apply border if selected
-    const border = BORDERS[activeBorder];
-    if (border && border.width) {
-      img.set({
-        stroke: border.color,
-        strokeWidth: border.width,
-      });
-    } else {
-      img.set({
-        stroke: undefined,
-        strokeWidth: 0,
-      });
-    }
-    
-    // Apply shadow if needed
-    if (border && border.shadow) {
-      img.set({
-        shadow: new fabric.Shadow({
-          color: 'rgba(0,0,0,0.3)',
-          blur: 10,
-          offsetX: 5,
-          offsetY: 5
-        })
-      });
-    } else {
-      img.set({
-        shadow: null
-      });
-    }
-    
-    if (canvas) {
-      canvas.renderAll();
+        filterSettings.forEach(setting => {
+          const filterType = Object.keys(setting)[0];
+          const value = setting[filterType];
+          
+          switch(filterType) {
+            case 'grayscale':
+              img.filters.push(new fabric.Image.filters.Grayscale());
+              break;
+            case 'sepia':
+              img.filters.push(new fabric.Image.filters.Sepia());
+              break;
+            case 'brightness':
+              img.filters.push(new fabric.Image.filters.Brightness({
+                brightness: value
+              }));
+              break;
+            case 'contrast':
+              img.filters.push(new fabric.Image.filters.Contrast({
+                contrast: value
+              }));
+              break;
+            case 'saturation':
+              img.filters.push(new fabric.Image.filters.Saturation({
+                saturation: value
+              }));
+              break;
+            default:
+              break;
+          }
+        });
+      }
+      
+      // Apply filters to the image
+      img.applyFilters();
+      
+      // Apply border if selected
+      const border = BORDERS[activeBorder];
+      if (border && border.width) {
+        img.set({
+          stroke: border.color,
+          strokeWidth: border.width,
+        });
+      } else {
+        img.set({
+          stroke: undefined,
+          strokeWidth: 0,
+        });
+      }
+      
+      // Apply shadow if needed
+      if (border && border.shadow) {
+        img.set({
+          shadow: new fabric.Shadow({
+            color: 'rgba(0,0,0,0.3)',
+            blur: 10,
+            offsetX: 5,
+            offsetY: 5
+          })
+        });
+      } else {
+        img.set({
+          shadow: null
+        });
+      }
+      
+      if (canvas) {
+        canvas.renderAll();
+      }
+    } catch (err) {
+      console.error("Error applying filters:", err);
     }
   };
   
-  // Handle image crop
+  // Handle crop feature
   const handleCrop = () => {
     if (!canvas) return;
     
@@ -277,94 +301,105 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
       const activeObj = canvas.getObjects()[0];
       if (!activeObj) return;
       
-      // Create a crop rectangle
-      const rect = new fabric.Rect({
-        left: canvas.width / 4,
-        top: canvas.height / 4,
-        width: canvas.width / 2,
-        height: canvas.height / 2,
-        fill: 'rgba(0,0,0,0.3)',
-        stroke: '#fff',
-        strokeDashArray: [5, 5],
-        strokeWidth: 2,
-        transparentCorners: false,
-        cornerColor: 'white',
-        cornerStrokeColor: '#333',
-        borderColor: '#333',
-        cornerSize: 10,
-        padding: 0,
-        cornerStyle: 'circle',
-        hasRotatingPoint: false
-      });
-      
-      canvas.add(rect);
-      canvas.setActiveObject(rect);
-      setCropRect(rect);
-      
+      try {
+        // Create a crop rectangle
+        const rect = new fabric.Rect({
+          left: canvas.width / 4,
+          top: canvas.height / 4,
+          width: canvas.width / 2,
+          height: canvas.height / 2,
+          fill: 'rgba(0,0,0,0.3)',
+          stroke: '#fff',
+          strokeDashArray: [5, 5],
+          strokeWidth: 2,
+          transparentCorners: false,
+          cornerColor: 'white',
+          cornerStrokeColor: '#333',
+          borderColor: '#333',
+          cornerSize: 10,
+          padding: 0,
+          cornerStyle: 'circle',
+          hasRotatingPoint: false
+        });
+        
+        canvas.add(rect);
+        canvas.setActiveObject(rect);
+        setCropRect(rect);
+      } catch (err) {
+        console.error("Error creating crop rectangle:", err);
+        setIsCropping(false);
+      }
     } else {
       // Apply the crop
-      if (cropRect) {
-        const img = canvas.getObjects()[0];
-        if (img && img.type === 'image') {
-          const imgElement = img._element;
-          const scale = img.scaleX;
-          
-          // Calculate crop coordinates relative to the image
-          const left = (cropRect.left - img.left) / scale + img.width / 2;
-          const top = (cropRect.top - img.top) / scale + img.height / 2;
-          const width = cropRect.width / scale;
-          const height = cropRect.height / scale;
-          
-          // Create a temporary canvas for cropping
-          const tempCanvas = document.createElement('canvas');
-          tempCanvas.width = width;
-          tempCanvas.height = height;
-          const ctx = tempCanvas.getContext('2d');
-          
-          ctx.drawImage(
-            imgElement, 
-            left, top, width, height,
-            0, 0, width, height
-          );
-          
-          // Convert to data URL and reload the image
-          const croppedDataUrl = tempCanvas.toDataURL('image/jpeg');
-          
-          // Remove all objects from canvas
-          canvas.clear();
-          
-          // Load the cropped image
-          fabric.Image.fromURL(croppedDataUrl, (fabricImg) => {
-            // Calculate scale to fit canvas
-            const imgWidth = fabricImg.width || 0;
-            const imgHeight = fabricImg.height || 0;
-            const imgAspect = imgWidth / imgHeight;
-            const canvasAspect = canvas.width / canvas.height;
+      if (cropRect && canvas) {
+        try {
+          const img = canvas.getObjects().find(obj => obj.type === 'image');
+          if (img && img._element) {
+            const imgElement = img._element;
+            const scale = img.scaleX;
             
-            let scaleFactor = 1;
-            if (imgAspect > canvasAspect) {
-              scaleFactor = canvas.width / imgWidth;
-            } else {
-              scaleFactor = canvas.height / imgHeight;
-            }
+            // Calculate crop coordinates relative to the image
+            const left = (cropRect.left - img.left) / scale + img.width / 2;
+            const top = (cropRect.top - img.top) / scale + img.height / 2;
+            const width = cropRect.width / scale;
+            const height = cropRect.height / scale;
             
-            fabricImg.scale(scaleFactor * 0.9);
+            // Create a temporary canvas for cropping
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            const ctx = tempCanvas.getContext('2d');
             
-            // Center the image on the canvas
-            fabricImg.set({
-              originX: 'center',
-              originY: 'center',
-              left: canvas.width / 2,
-              top: canvas.height / 2,
+            ctx.drawImage(
+              imgElement, 
+              left, top, width, height,
+              0, 0, width, height
+            );
+            
+            // Convert to data URL and reload the image
+            const croppedDataUrl = tempCanvas.toDataURL('image/jpeg');
+            
+            // Remove all objects from canvas
+            canvas.clear();
+            
+            // Load the cropped image
+            fabric.Image.fromURL(croppedDataUrl, (fabricImg) => {
+              if (!canvas) return; // Safety check
+              
+              // Calculate scale to fit canvas
+              const imgWidth = fabricImg.width || 0;
+              const imgHeight = fabricImg.height || 0;
+              const imgAspect = imgWidth / imgHeight;
+              const canvasAspect = canvas.width / canvas.height;
+              
+              let scaleFactor = 1;
+              if (imgAspect > canvasAspect) {
+                scaleFactor = canvas.width / imgWidth;
+              } else {
+                scaleFactor = canvas.height / imgHeight;
+              }
+              
+              fabricImg.scale(scaleFactor * 0.9);
+              
+              // Center the image on the canvas
+              fabricImg.set({
+                originX: 'center',
+                originY: 'center',
+                left: canvas.width / 2,
+                top: canvas.height / 2,
+              });
+              
+              canvas.add(fabricImg);
+              canvas.renderAll();
             });
-            
-            canvas.add(fabricImg);
-            canvas.renderAll();
-          });
+          }
+          
+          // Remove crop rectangle
+          canvas.remove(cropRect);
+          setCropRect(null);
+        } catch (err) {
+          console.error("Error applying crop:", err);
         }
-        
-        canvas.remove(cropRect);
-        setCropRect(null);
       }
       
       setIsCropping(false);
@@ -375,23 +410,27 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
   const handleRotate = (direction) => {
     if (!canvas) return;
     
-    const angle = direction === 'clockwise' ? 90 : -90;
-    const activeObj = canvas.getActiveObject();
-    
-    if (activeObj) {
-      const currentAngle = activeObj.angle || 0;
-      activeObj.rotate(currentAngle + angle);
-    } else {
-      // If no object is selected, rotate the first image
-      const objects = canvas.getObjects();
-      if (objects.length > 0) {
-        const obj = objects[0];
-        const currentAngle = obj.angle || 0;
-        obj.rotate(currentAngle + angle);
+    try {
+      const angle = direction === 'clockwise' ? 90 : -90;
+      const activeObj = canvas.getActiveObject();
+      
+      if (activeObj) {
+        const currentAngle = activeObj.angle || 0;
+        activeObj.rotate(currentAngle + angle);
+      } else {
+        // If no object is selected, rotate the first image
+        const objects = canvas.getObjects();
+        if (objects.length > 0) {
+          const obj = objects[0];
+          const currentAngle = obj.angle || 0;
+          obj.rotate(currentAngle + angle);
+        }
       }
+      
+      canvas.renderAll();
+    } catch (err) {
+      console.error("Error rotating image:", err);
     }
-    
-    canvas.renderAll();
   };
   
   // Handle slider adjustments
@@ -415,12 +454,12 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
   
   // Handle size change
   const handleSizeChange = (size) => {
-    if (size === activeSize) return;
+    if (size === activeSize || !canvas) return;
     
     setActiveSize(size);
     
     // Reload the image with new size
-    if (canvas) {
+    try {
       const objects = canvas.getObjects().filter(obj => obj.type === 'image');
       if (objects.length > 0) {
         canvas.remove(objects[0]);
@@ -430,6 +469,8 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
         
         // Reloading the image
         fabric.Image.fromURL(imageUrl, (fabricImg) => {
+          if (!canvas || !fabricImg) return;
+          
           const imgWidth = fabricImg.width || 0;
           const imgHeight = fabricImg.height || 0;
           const imgAspect = imgWidth / imgHeight;
@@ -479,6 +520,9 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
           setIsLoading(false);
         }, { crossOrigin: 'anonymous' });
       }
+    } catch (err) {
+      console.error("Error changing image size:", err);
+      setIsLoading(false);
     }
   };
   
@@ -495,7 +539,7 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
       
       onSave(dataURL);
     } catch (error) {
-      console.error("Error saving image: ", error);
+      console.error("Error saving image:", error);
     }
   };
   
@@ -512,7 +556,7 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
             <Loader className="animate-spin text-photobooth-primary" />
           </div>
         )}
-        <canvas ref={canvasRef} className="w-full" />
+        <canvas ref={canvasRef} className="w-full h-full" />
       </div>
       
       <Tabs defaultValue="adjust" className="w-full">
@@ -612,6 +656,7 @@ const PhotoEditor = ({ imageUrl, onSave, onCancel }) => {
               </label>
               <Slider
                 defaultValue={[adjustmentValues[activeAdjustment]]}
+                value={[adjustmentValues[activeAdjustment]]}
                 min={-100}
                 max={100}
                 step={1}
