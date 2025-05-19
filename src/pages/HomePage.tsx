@@ -15,7 +15,7 @@ const HomePage: React.FC = () => {
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const { createSession, sessions, deleteSession, setCurrentSession } = usePhotoBoothContext();
+  const { createSession, sessions, deleteSession, setCurrentSession, locations } = usePhotoBoothContext();
   const navigate = useNavigate();
 
   const handleStartSession = (e: React.FormEvent) => {
@@ -79,17 +79,27 @@ const HomePage: React.FC = () => {
       )
     : sessions;
 
+  // Get locations from context
+  const sessionLocations = locations && locations.length > 0 
+    ? locations.filter(loc => !loc.disabled) 
+    : [
+        { id: 'entrance', name: 'Entrance' },
+        { id: 'castle', name: 'Castle' },
+        { id: 'waterfall', name: 'Waterfall' },
+        { id: 'themeRide', name: 'Theme Ride' }
+      ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
       <Header />
       
-      <div className="relative w-full bg-photobooth-primary py-12 overflow-hidden">
+      <div className="relative w-full bg-photobooth-primary py-10 overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
               Capture Your Perfect Moments
             </h1>
-            <p className="text-lg md:text-xl text-blue-100 mb-8">
+            <p className="text-lg md:text-xl text-blue-100 mb-6">
               Create stunning photo collections with our professional editing tools
             </p>
           </div>
@@ -99,17 +109,17 @@ const HomePage: React.FC = () => {
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl"></div>
       </div>
       
-      <main className="flex-1 container mx-auto px-4 py-8 -mt-10">
+      <main className="flex-1 container mx-auto px-4 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* New Session Card */}
-          <Card className="shadow-xl border-2 border-photobooth-primary/20 rounded-xl overflow-hidden hover:border-photobooth-primary/50 transition-all">
-            <CardHeader className="bg-gradient-to-r from-photobooth-primary/10 to-blue-50 border-b border-photobooth-primary/10">
-              <CardTitle className="text-2xl font-bold text-photobooth-primary flex items-center">
-                <Camera className="mr-2 h-6 w-6" />
+          <Card className="shadow-lg border-2 border-photobooth-primary/20 rounded-md overflow-hidden hover:border-photobooth-primary/50 transition-all">
+            <CardHeader className="bg-blue-100/50 border-b border-photobooth-primary/10 py-4">
+              <CardTitle className="text-xl font-bold text-photobooth-primary flex items-center">
+                <Camera className="mr-2 h-5 w-5" />
                 Start New Photo Session
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-6 bg-white">
               <form onSubmit={handleStartSession} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-gray-700 font-medium">Customer Name</Label>
@@ -129,10 +139,9 @@ const HomePage: React.FC = () => {
                       <SelectValue placeholder="Select location" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="entrance">Entrance</SelectItem>
-                      <SelectItem value="castle">Castle</SelectItem>
-                      <SelectItem value="waterfall">Waterfall</SelectItem>
-                      <SelectItem value="themeRide">Theme Ride</SelectItem>
+                      {sessionLocations.map(loc => (
+                        <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -148,14 +157,14 @@ const HomePage: React.FC = () => {
           </Card>
           
           {/* Previous Sessions Card */}
-          <Card className="shadow-xl border-2 border-blue-400/20 rounded-xl overflow-hidden hover:border-blue-400/50 transition-all">
-            <CardHeader className="bg-gradient-to-r from-blue-400/10 to-blue-50 border-b border-blue-400/10">
-              <CardTitle className="text-2xl font-bold text-blue-600 flex items-center">
-                <MapPin className="mr-2 h-6 w-6" />
+          <Card className="shadow-lg border-2 border-blue-400/20 rounded-md overflow-hidden hover:border-blue-400/50 transition-all">
+            <CardHeader className="bg-blue-100/50 border-b border-blue-400/10 py-4">
+              <CardTitle className="text-xl font-bold text-blue-600 flex items-center">
+                <MapPin className="mr-2 h-5 w-5" />
                 Previous Sessions
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-6 bg-white">
               <div className="space-y-1">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -168,15 +177,15 @@ const HomePage: React.FC = () => {
                 </div>
                 
                 {filteredSessions.length === 0 ? (
-                  <div className="text-center py-10 text-gray-500">
+                  <div className="text-center py-8 text-gray-500">
                     {searchTerm ? "No matching sessions found" : "No sessions found"}
                   </div>
                 ) : (
-                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden max-h-[400px] overflow-auto shadow-inner">
+                  <div className="bg-white rounded-md border border-gray-200 overflow-hidden max-h-[350px] overflow-auto shadow-inner">
                     {filteredSessions.map(session => (
                       <div 
                         key={session.id}
-                        className="p-4 hover:bg-blue-50 cursor-pointer flex items-center justify-between border-b border-gray-100 last:border-b-0 transition-colors"
+                        className="p-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between border-b border-gray-100 last:border-b-0 transition-colors"
                         onClick={() => handleOpenSession(session.id)}
                       >
                         <div className="space-y-1">
@@ -206,7 +215,7 @@ const HomePage: React.FC = () => {
           </Card>
         </div>
         
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="bg-gradient-to-b from-photobooth-primary/5 to-transparent shadow-sm border border-photobooth-primary/10 hover:shadow-md transition-all">
             <CardContent className="pt-6 text-center">
               <div className="rounded-full bg-photobooth-primary/10 p-3 inline-flex mb-4">

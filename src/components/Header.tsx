@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { usePhotoBoothContext } from '@/context/PhotoBoothContext';
-import { Menu, X, Settings, CircleUser, Package, LogOut } from 'lucide-react';
+import { Menu, X, Settings, CircleUser, Package, LogOut, QrCode } from 'lucide-react';
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Header = () => {
@@ -16,6 +16,10 @@ const Header = () => {
     logout();
     navigate('/');
     setIsMenuOpen(false);
+  };
+
+  const handleQRCodeClick = () => {
+    navigate('/qr-scanner');
   };
 
   const toggleMenu = () => {
@@ -37,9 +41,9 @@ const Header = () => {
             <div className="flex items-center gap-2">
               {currentUser && (
                 <Button 
-                  variant="ghost" 
+                  variant="secondary" 
                   size="sm"
-                  className="flex items-center text-white hover:bg-white/20"
+                  className="flex items-center bg-white/20 text-white hover:bg-white hover:text-photobooth-primary"
                   onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4 mr-1" />
@@ -49,7 +53,7 @@ const Header = () => {
               
               <button 
                 onClick={toggleMenu} 
-                className="text-white hover:text-blue-200 transition-colors"
+                className="text-white hover:text-blue-200 transition-colors p-2 rounded-md bg-white/10"
                 aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               >
                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -69,6 +73,13 @@ const Header = () => {
                         <Settings className="h-5 w-5" />
                         <span>Profile Settings</span>
                       </Link>
+                      <button 
+                        onClick={handleQRCodeClick} 
+                        className="p-2 hover:bg-blue-50 rounded flex items-center gap-2 text-photobooth-primary"
+                      >
+                        <QrCode className="h-5 w-5" />
+                        <span>Scan QR Code</span>
+                      </button>
                     </>
                   ) : (
                     <Link 
@@ -91,18 +102,26 @@ const Header = () => {
                   <CircleUser className="mr-1 h-5 w-5" />
                   {currentUser.name} ({currentUser.role})
                 </span>
+                <Button
+                  variant="secondary"
+                  className="text-white bg-white/20 hover:bg-white hover:text-photobooth-primary"
+                  onClick={handleQRCodeClick}
+                >
+                  <QrCode className="h-4 w-4 mr-1" />
+                  <span className="block">Scan QR</span>
+                </Button>
                 <Link to="/profile">
                   <Button 
-                    variant="ghost" 
-                    className="text-white hover:bg-white/20"
+                    variant="secondary"
+                    className="text-white bg-white/20 hover:bg-white hover:text-photobooth-primary"
                   >
                     <Settings className="h-4 w-4 mr-1" />
                     <span className="block">Settings</span>
                   </Button>
                 </Link>
                 <Button 
-                  variant="outline" 
-                  className="text-white border-white hover:bg-white hover:text-photobooth-primary font-semibold"
+                  variant="secondary"
+                  className="text-white bg-white/20 hover:bg-white hover:text-photobooth-primary font-semibold"
                   onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4 mr-1" />

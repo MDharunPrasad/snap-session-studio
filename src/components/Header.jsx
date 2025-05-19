@@ -41,9 +41,9 @@ const Header = () => {
             <div className="flex items-center gap-2">
               {currentUser && (
                 <Button 
-                  variant="ghost" 
+                  variant="secondary" 
                   size="sm"
-                  className="flex items-center text-white bg-white/10"
+                  className="flex items-center bg-white/20 text-white hover:bg-white hover:text-photobooth-primary"
                   onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4 mr-1" />
@@ -53,7 +53,7 @@ const Header = () => {
               
               <button 
                 onClick={toggleMenu} 
-                className="text-white bg-white/10 p-2 rounded-md"
+                className="text-white hover:text-blue-200 transition-colors p-2 rounded-md bg-white/10"
                 aria-label={isMenuOpen ? "Close menu" : "Open menu"}
               >
                 {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -103,8 +103,8 @@ const Header = () => {
                   {currentUser.name} ({currentUser.role})
                 </span>
                 <Button
-                  variant="ghost"
-                  className="text-white bg-white/10"
+                  variant="secondary"
+                  className="text-white bg-white/20 hover:bg-white hover:text-photobooth-primary"
                   onClick={handleQRCodeClick}
                 >
                   <QrCode className="h-4 w-4 mr-1" />
@@ -112,16 +112,16 @@ const Header = () => {
                 </Button>
                 <Link to="/profile">
                   <Button 
-                    variant="ghost" 
-                    className="text-white bg-white/10"
+                    variant="secondary"
+                    className="text-white bg-white/20 hover:bg-white hover:text-photobooth-primary"
                   >
                     <Settings className="h-4 w-4 mr-1" />
                     <span className="block">Settings</span>
                   </Button>
                 </Link>
                 <Button 
-                  variant="outline" 
-                  className="text-white border-white bg-white/10 font-semibold"
+                  variant="secondary"
+                  className="text-white bg-white/20 hover:bg-white hover:text-photobooth-primary font-semibold"
                   onClick={handleLogout}
                 >
                   <LogOut className="h-4 w-4 mr-1" />

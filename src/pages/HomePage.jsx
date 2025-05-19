@@ -79,7 +79,7 @@ const HomePage = () => {
       )
     : sessions;
 
-  // Get locations from context or use default ones if not available
+  // Get locations from context
   const sessionLocations = locations && locations.length > 0 
     ? locations.filter(loc => !loc.disabled) 
     : [
@@ -93,13 +93,13 @@ const HomePage = () => {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
       <Header />
       
-      <div className="relative w-full bg-photobooth-primary py-12 overflow-hidden">
+      <div className="relative w-full bg-photobooth-primary py-10 overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
               Capture Your Perfect Moments
             </h1>
-            <p className="text-lg md:text-xl text-blue-100 mb-8">
+            <p className="text-lg md:text-xl text-blue-100 mb-6">
               Create stunning photo collections with our professional editing tools
             </p>
           </div>
@@ -109,13 +109,13 @@ const HomePage = () => {
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl"></div>
       </div>
       
-      <main className="flex-1 container mx-auto px-4 py-8 -mt-10">
+      <main className="flex-1 container mx-auto px-4 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* New Session Card */}
-          <Card className="shadow-xl border-2 border-photobooth-primary/20 rounded-xl overflow-hidden hover:border-photobooth-primary/50 transition-all transform hover:translate-y-[-5px]">
-            <CardHeader className="bg-gradient-to-r from-photobooth-primary/10 to-blue-50 border-b border-photobooth-primary/10">
-              <CardTitle className="text-2xl font-bold text-photobooth-primary flex items-center">
-                <Camera className="mr-2 h-6 w-6" />
+          <Card className="shadow-lg border-2 border-photobooth-primary/20 rounded-md overflow-hidden hover:border-photobooth-primary/50 transition-all">
+            <CardHeader className="bg-blue-100/50 border-b border-photobooth-primary/10 py-4">
+              <CardTitle className="text-xl font-bold text-photobooth-primary flex items-center">
+                <Camera className="mr-2 h-5 w-5" />
                 Start New Photo Session
               </CardTitle>
             </CardHeader>
@@ -157,10 +157,10 @@ const HomePage = () => {
           </Card>
           
           {/* Previous Sessions Card */}
-          <Card className="shadow-xl border-2 border-blue-400/20 rounded-xl overflow-hidden hover:border-blue-400/50 transition-all transform hover:translate-y-[-5px]">
-            <CardHeader className="bg-gradient-to-r from-blue-400/10 to-blue-50 border-b border-blue-400/10">
-              <CardTitle className="text-2xl font-bold text-blue-600 flex items-center">
-                <MapPin className="mr-2 h-6 w-6" />
+          <Card className="shadow-lg border-2 border-blue-400/20 rounded-md overflow-hidden hover:border-blue-400/50 transition-all">
+            <CardHeader className="bg-blue-100/50 border-b border-blue-400/10 py-4">
+              <CardTitle className="text-xl font-bold text-blue-600 flex items-center">
+                <MapPin className="mr-2 h-5 w-5" />
                 Previous Sessions
               </CardTitle>
             </CardHeader>
@@ -177,15 +177,15 @@ const HomePage = () => {
                 </div>
                 
                 {filteredSessions.length === 0 ? (
-                  <div className="text-center py-10 text-gray-500">
+                  <div className="text-center py-8 text-gray-500">
                     {searchTerm ? "No matching sessions found" : "No sessions found"}
                   </div>
                 ) : (
-                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden max-h-[400px] overflow-auto shadow-inner">
+                  <div className="bg-white rounded-md border border-gray-200 overflow-hidden max-h-[350px] overflow-auto shadow-inner">
                     {filteredSessions.map(session => (
                       <div 
                         key={session.id}
-                        className="p-4 hover:bg-blue-50 cursor-pointer flex items-center justify-between border-b border-gray-100 last:border-b-0 transition-colors"
+                        className="p-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between border-b border-gray-100 last:border-b-0 transition-colors"
                         onClick={() => handleOpenSession(session.id)}
                       >
                         <div className="space-y-1">
@@ -215,8 +215,8 @@ const HomePage = () => {
           </Card>
         </div>
         
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-gradient-to-b from-photobooth-primary/5 to-transparent shadow-sm border border-photobooth-primary/10 hover:shadow-md transition-all transform hover:translate-y-[-5px]">
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-gradient-to-b from-photobooth-primary/5 to-transparent shadow-sm border border-photobooth-primary/10 hover:shadow-md transition-all">
             <CardContent className="pt-6 text-center">
               <div className="rounded-full bg-photobooth-primary/10 p-3 inline-flex mb-4">
                 <Camera className="h-6 w-6 text-photobooth-primary" />
@@ -225,7 +225,7 @@ const HomePage = () => {
               <p className="text-gray-600 text-sm">Capture high-quality professional photos with our state-of-the-art equipment</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-b from-blue-400/5 to-transparent shadow-sm border border-blue-400/10 hover:shadow-md transition-all transform hover:translate-y-[-5px]">
+          <Card className="bg-gradient-to-b from-blue-400/5 to-transparent shadow-sm border border-blue-400/10 hover:shadow-md transition-all">
             <CardContent className="pt-6 text-center">
               <div className="rounded-full bg-blue-400/10 p-3 inline-flex mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-blue-500">
@@ -238,7 +238,7 @@ const HomePage = () => {
               <p className="text-gray-600 text-sm">Edit your photos instantly with our powerful yet easy-to-use editing tools</p>
             </CardContent>
           </Card>
-          <Card className="bg-gradient-to-b from-purple-400/5 to-transparent shadow-sm border border-purple-400/10 hover:shadow-md transition-all transform hover:translate-y-[-5px]">
+          <Card className="bg-gradient-to-b from-purple-400/5 to-transparent shadow-sm border border-purple-400/10 hover:shadow-md transition-all">
             <CardContent className="pt-6 text-center">
               <div className="rounded-full bg-purple-400/10 p-3 inline-flex mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-purple-500">
