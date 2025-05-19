@@ -80,7 +80,7 @@ const HomePage = () => {
     : sessions;
 
   // Get active locations from context
-  const activeLocations = locations.filter(loc => !loc.disabled);
+  const activeLocations = locations ? locations.filter(loc => !loc.disabled) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">

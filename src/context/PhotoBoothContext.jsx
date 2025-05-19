@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Types
+// Create context
 const PhotoBoothContext = createContext(undefined);
 
 export const usePhotoBoothContext = () => {
