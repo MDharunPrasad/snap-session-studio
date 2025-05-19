@@ -8,7 +8,7 @@ import { usePhotoBoothContext } from '@/context/PhotoBoothContext';
 import { Trash2, ShoppingCart, ArrowLeft, CheckCircle, Package } from 'lucide-react';
 import Header from '@/components/Header';
 
-const CartPage: React.FC = () => {
+const CartPage = () => {
   const { currentSession, completeSession } = usePhotoBoothContext();
   const [total, setTotal] = useState(0);
   const { toast } = useToast();
@@ -87,7 +87,9 @@ const CartPage: React.FC = () => {
                     </h3>
                     <div className="font-semibold">₹{currentSession.bundle.price}</div>
                   </div>
-                  <p className="text-sm text-gray-600 mt-1">{currentSession.bundle.description}</p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {currentSession.bundle.count} photos package
+                  </p>
                 </div>
                 
                 <div className="divide-y">
