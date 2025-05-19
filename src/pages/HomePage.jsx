@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -78,15 +79,8 @@ const HomePage = () => {
       )
     : sessions;
 
-  // Get locations from context
-  const sessionLocations = locations && locations.length > 0 
-    ? locations.filter(loc => !loc.disabled) 
-    : [
-        { id: 'entrance', name: 'Entrance' },
-        { id: 'castle', name: 'Castle' },
-        { id: 'waterfall', name: 'Waterfall' },
-        { id: 'themeRide', name: 'Theme Ride' }
-      ];
+  // Get active locations from context
+  const activeLocations = locations.filter(loc => !loc.disabled);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
@@ -138,8 +132,8 @@ const HomePage = () => {
                       <SelectValue placeholder="Select location" />
                     </SelectTrigger>
                     <SelectContent>
-                      {sessionLocations.map(loc => (
-                        <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
+                      {activeLocations.map(loc => (
+                        <SelectItem key={loc.id} value={loc.name}>{loc.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>

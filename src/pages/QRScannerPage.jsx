@@ -1,166 +1,131 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Html5QrcodeScanner } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { usePhotoBoothContext } from '@/context/PhotoBoothContext';
-import { QrCode, Camera } from 'lucide-react';
-import Header from '@/components/Header';
+import { useNavigate } from "react-router-dom";
+import { usePhotoBoothContext } from "@/context/PhotoBoothContext";
+import Header from "@/components/Header";
 
 const QRScannerPage = () => {
-  const [scanning, setScanning] = useState(false);
-  const [permission, setPermission] = useState(false);
+  const [scanResult, setScanResult] = useState(null);
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const videoRef = useRef(null);
   const { sessions, setCurrentSession } = usePhotoBoothContext();
-  
-  // Start camera when scanning is enabled
+  const navigate = useNavigate();
+
   useEffect(() => {
-    let stream = null;
-    
-    if (scanning) {
-      // Request camera access
-      navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
-      })
-      .then(videoStream => {
-        setPermission(true);
-        stream = videoStream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = videoStream;
-        }
-      })
-      .catch(error => {
-        console.error('Error accessing camera:', error);
+    // Initialize QR scanner
+    const scanner = new Html5QrcodeScanner(
+      "qr-reader",
+      { fps: 10, qrbox: 250 },
+      /* verbose= */ false
+    );
+
+    let mounted = true;
+
+    function onScanSuccess(decodedText) {
+      if (!mounted) return;
+
+      // Assuming the QR code contains a session ID
+      const sessionId = decodedText.trim();
+      
+      // Try to find the session
+      const session = sessions.find(s => s.id === sessionId);
+      
+      if (session) {
+        setScanResult(decodedText);
         toast({
-          title: "Camera Access Denied",
-          description: "Please allow camera access to scan QR codes.",
+          title: "Session Found!",
+          description: `Found session for ${session.name}`,
+        });
+        
+        // Set as current session and navigate to editor or bundles page
+        setCurrentSession(session);
+        
+        // Clear scanner
+        scanner.clear();
+        
+        // Navigate to appropriate page based on session state
+        if (session.bundle) {
+          navigate("/editor");
+        } else {
+          navigate("/bundles");
+        }
+      } else {
+        toast({
+          title: "Invalid QR Code",
+          description: "No matching session found for this QR code.",
           variant: "destructive"
         });
-        setScanning(false);
-        setPermission(false);
-      });
-    } else if (stream) {
-      // Stop camera when not scanning
-      stream.getTracks().forEach(track => track.stop());
-    }
-    
-    return () => {
-      // Clean up camera on unmount
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
       }
-    };
-  }, [scanning, toast]);
-  
-  const handleStartScan = () => {
-    setScanning(true);
-  };
-  
-  const handleStopScan = () => {
-    setScanning(false);
-  };
-  
-  // This function would be integrated with an actual QR code library in production
-  const handleManualSessionId = (sessionId) => {
-    const session = sessions.find(s => s.id === sessionId);
-    
-    if (session) {
-      setCurrentSession(session);
-      toast({
-        title: "Session Found",
-        description: `Loaded session for ${session.name}`,
-      });
-      navigate(`/session/${sessionId}`);
-    } else {
-      toast({
-        title: "Session Not Found",
-        description: "No session found with that ID.",
-        variant: "destructive"
-      });
     }
-  };
-  
+
+    function onScanFailure(error) {
+      // Non-critical errors are silently handled
+      console.warn(`QR scan error: ${error}`);
+    }
+
+    scanner.render(onScanSuccess, onScanFailure);
+
+    return () => {
+      mounted = false;
+      scanner.clear();
+    };
+  }, [sessions, navigate, setCurrentSession, toast]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50 flex flex-col">
       <Header />
       
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-md mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-photobooth-primary flex items-center mb-6">
-            <QrCode className="mr-2 h-6 w-6" />
-            QR Code Scanner
-          </h1>
-          
-          <Card className="overflow-hidden shadow-lg">
-            <CardContent className="p-0">
-              <div className="bg-gradient-to-r from-photobooth-primary to-blue-500 text-white p-4">
-                <h2 className="text-lg font-semibold">
-                  Scan QR Code to View Gallery
-                </h2>
-                <p className="text-sm opacity-90">
-                  Point your camera at a session QR code to access the photo gallery
-                </p>
-              </div>
-              
-              {scanning ? (
-                <div className="relative">
-                  <div className="w-full aspect-square bg-black flex items-center justify-center">
-                    <video 
-                      ref={videoRef} 
-                      className="w-full h-full object-cover"
-                      autoPlay 
-                      playsInline
-                    />
-                    <div className="absolute inset-0 border-2 border-white/50 m-8 pointer-events-none"></div>
+      <main className="flex-1 container mx-auto px-4 py-8">
+        <div className="max-w-xl mx-auto">
+          <Card className="shadow-lg border-2 border-photobooth-primary/20 rounded-md overflow-hidden">
+            <CardHeader className="bg-blue-100/50 border-b border-photobooth-primary/10 py-4">
+              <CardTitle className="text-xl font-bold text-photobooth-primary">
+                QR Code Scanner
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              {scanResult ? (
+                <div className="text-center py-4">
+                  <div className="text-lg font-medium text-green-600 mb-2">
+                    Scan successful!
                   </div>
-                  <Button
-                    onClick={handleStopScan}
-                    variant="destructive"
-                    className="absolute bottom-4 right-4"
-                  >
-                    Stop Scan
-                  </Button>
+                  <p className="text-gray-600 mb-4">
+                    Session ID: {scanResult}
+                  </p>
+                  <div className="animate-pulse">
+                    <p className="text-gray-600">Redirecting...</p>
+                  </div>
                 </div>
               ) : (
-                <div className="p-6 flex flex-col items-center">
-                  <div className="bg-gray-100 rounded-lg p-8 mb-4 w-full max-w-[240px] aspect-square flex items-center justify-center">
-                    <Camera className="h-12 w-12 text-gray-400" />
+                <>
+                  <p className="text-gray-600 mb-4 text-center">
+                    Position a QR code in the scanning area to retrieve a photo session.
+                  </p>
+                  <div id="qr-reader" className="w-full max-w-sm mx-auto mb-4"></div>
+                  <div className="flex justify-center">
+                    <Button 
+                      variant="outline"
+                      onClick={() => navigate("/")}
+                      className="mt-2"
+                    >
+                      Cancel
+                    </Button>
                   </div>
-                  
-                  <Button 
-                    onClick={handleStartScan}
-                    className="w-full bg-photobooth-primary hover:bg-photobooth-primary-dark my-4"
-                  >
-                    <Camera className="mr-2 h-4 w-4" />
-                    Start Camera
-                  </Button>
-                  
-                  <div className="text-center mt-4">
-                    <p className="text-sm text-gray-500 mb-2">For testing, enter a session ID:</p>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => handleManualSessionId(sessions.length > 0 ? sessions[0].id : 'test-session')}
-                        className="text-xs"
-                      >
-                        Test Session
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+                </>
               )}
             </CardContent>
           </Card>
           
-          <div className="mt-6 text-center text-gray-500 text-sm">
-            <p>QR codes are attached to each session receipt</p>
-            <p>Customers can scan these codes to view and download their photos</p>
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-md border border-blue-100 shadow-sm mt-6">
+            <p className="text-sm text-blue-800">
+              <strong>Tip:</strong> Make sure the QR code is well lit and centered in the scanning area for best results.
+            </p>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
