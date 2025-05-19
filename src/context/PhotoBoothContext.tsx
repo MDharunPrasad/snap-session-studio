@@ -9,6 +9,12 @@ interface User {
   role: 'Admin' | 'Cameraman';
 }
 
+interface Location {
+  id: string;
+  name: string;
+  disabled?: boolean;
+}
+
 interface Session {
   id: string;
   name: string;
@@ -27,6 +33,7 @@ interface PhotoBoothContextType {
   currentUser: User | null;
   sessions: Session[];
   currentSession: Session | null;
+  locations: Location[];
   login: (email: string, password: string, role: string) => boolean;
   logout: () => void;
   register: (name: string, email: string, password: string, role: string) => boolean;
@@ -38,6 +45,8 @@ interface PhotoBoothContextType {
   updatePhoto: (sessionId: string, photoId: string, updates: Partial<Photo>) => void;
   deletePhoto: (sessionId: string, photoId: string) => void;
   completeSession: (sessionId: string) => void;
+  addLocation?: (name: string) => void;
+  updateLocationStatus?: (id: string, disabled: boolean) => void;
 }
 
 const PhotoBoothContext = createContext<PhotoBoothContextType | undefined>(undefined);
@@ -54,11 +63,18 @@ export const PhotoBoothProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
+  const [locations, setLocations] = useState<Location[]>([
+    { id: 'entrance', name: 'Entrance' },
+    { id: 'castle', name: 'Castle' },
+    { id: 'waterfall', name: 'Waterfall' },
+    { id: 'themeRide', name: 'Theme Ride' }
+  ]);
 
   // Load data from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem('photoBoothUser');
     const storedSessions = localStorage.getItem('photoBoothSessions');
+    const storedLocations = localStorage.getItem('photoBoothLocations');
     
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
@@ -95,6 +111,12 @@ export const PhotoBoothProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       setSessions(sampleSessions);
       localStorage.setItem('photoBoothSessions', JSON.stringify(sampleSessions));
     }
+    
+    if (storedLocations) {
+      setLocations(JSON.parse(storedLocations));
+    } else {
+      localStorage.setItem('photoBoothLocations', JSON.stringify(locations));
+    }
   }, []);
 
   // Save data to localStorage whenever it changes
@@ -111,6 +133,29 @@ export const PhotoBoothProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       localStorage.removeItem('photoBoothUser');
     }
   }, [currentUser]);
+  
+  useEffect(() => {
+    localStorage.setItem('photoBoothLocations', JSON.stringify(locations));
+  }, [locations]);
+
+  // Location management
+  const addLocation = (name: string) => {
+    const newLocation: Location = {
+      id: name.toLowerCase().replace(/\s+/g, '-'),
+      name: name,
+      disabled: false
+    };
+    
+    setLocations(prev => [...prev, newLocation]);
+  };
+
+  const updateLocationStatus = (id: string, disabled: boolean) => {
+    setLocations(prev => 
+      prev.map(loc => 
+        loc.id === id ? { ...loc, disabled } : loc
+      )
+    );
+  };
 
   // User authentication functions
   const login = (email: string, password: string, role: string): boolean => {
@@ -302,6 +347,7 @@ export const PhotoBoothProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     currentUser,
     sessions,
     currentSession,
+    locations,
     login,
     logout,
     register,
@@ -312,7 +358,9 @@ export const PhotoBoothProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     addPhoto,
     updatePhoto,
     deletePhoto,
-    completeSession
+    completeSession,
+    addLocation,
+    updateLocationStatus
   };
 
   return <PhotoBoothContext.Provider value={value}>{children}</PhotoBoothContext.Provider>;
