@@ -19,7 +19,8 @@ const Header = () => {
   };
 
   const handleQRCodeClick = () => {
-    navigate('/qr-scanner');
+    navigate('/scan');
+    setIsMenuOpen(false);
   };
 
   const toggleMenu = () => {

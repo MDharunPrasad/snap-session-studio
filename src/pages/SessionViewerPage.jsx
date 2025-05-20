@@ -7,10 +7,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { usePhotoBoothContext } from '@/context/PhotoBoothContext';
 import Header from '@/components/Header';
 
-const SessionViewerPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+const SessionViewerPage = () => {
+  const { id } = useParams();
   const { sessions, setCurrentSession, deleteSession } = usePhotoBoothContext();
-  const [session, setSession] = useState<typeof sessions[0] | null>(null);
+  const [session, setSession] = useState(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -29,7 +29,7 @@ const SessionViewerPage: React.FC = () => {
         navigate('/');
       }
     }
-  }, [id, sessions, navigate]);
+  }, [id, sessions, navigate, toast]);
 
   const handleContinueSession = () => {
     if (session) {

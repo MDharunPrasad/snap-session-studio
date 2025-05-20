@@ -10,38 +10,51 @@ import { useToast } from "@/components/ui/use-toast";
 import { usePhotoBoothContext } from '@/context/PhotoBoothContext';
 import Header from '@/components/Header';
 
-const LoginPage: React.FC = () => {
+const RegisterPage = () => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [role, setRole] = useState('');
-  const { login } = usePhotoBoothContext();
+  const { register } = usePhotoBoothContext();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     
-    if (!email || !password || !role) {
+    // Validate form
+    if (!name || !email || !password || !confirmPassword || !role) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all fields to login.",
+        description: "Please fill in all fields to register.",
         variant: "destructive"
       });
       return;
     }
     
-    const success = login(email, password, role);
+    if (password !== confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Password and confirmation do not match.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Register the user
+    const success = register(name, email, password, role);
     
     if (success) {
       toast({
-        title: "Login Successful",
-        description: "Welcome back to PhotoBooth Software."
+        title: "Registration Successful",
+        description: "Your account has been created successfully."
       });
       navigate('/');
     } else {
       toast({
-        title: "Login Failed",
-        description: "Invalid email, password, or role. Please try again.",
+        title: "Registration Failed",
+        description: "This email is already registered.",
         variant: "destructive"
       });
     }
@@ -54,8 +67,8 @@ const LoginPage: React.FC = () => {
       <main className="flex-1 flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-photobooth-primary">Login</CardTitle>
-            <CardDescription>Sign in to access your PhotoBooth account</CardDescription>
+            <CardTitle className="text-2xl font-bold text-photobooth-primary">Register</CardTitle>
+            <CardDescription>Create your PhotoBooth account</CardDescription>
           </CardHeader>
           
           <CardContent>
@@ -74,6 +87,16 @@ const LoginPage: React.FC = () => {
               </div>
               
               <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input 
+                  id="name" 
+                  placeholder="Enter your full name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input 
                   id="email" 
@@ -89,9 +112,20 @@ const LoginPage: React.FC = () => {
                 <Input 
                   id="password" 
                   type="password" 
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input 
+                  id="confirmPassword" 
+                  type="password" 
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </div>
               
@@ -99,16 +133,16 @@ const LoginPage: React.FC = () => {
                 type="submit" 
                 className="w-full bg-photobooth-primary hover:bg-photobooth-primary-dark"
               >
-                Login
+                Register
               </Button>
             </form>
           </CardContent>
           
           <CardFooter className="flex justify-center">
             <div className="text-sm text-gray-600">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-photobooth-primary font-medium hover:underline">
-                Register here
+              Already have an account?{" "}
+              <Link to="/login" className="text-photobooth-primary font-medium hover:underline">
+                Login here
               </Link>
             </div>
           </CardFooter>
@@ -118,4 +152,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

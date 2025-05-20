@@ -86,8 +86,8 @@ const HomePage = () => {
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
       <Header />
       
-      <div className="relative w-full bg-photobooth-primary py-10 overflow-hidden">
-        <div className="container mx-auto px-4 relative z-10">
+      <div className="w-full bg-photobooth-primary py-10">
+        <div className="container mx-auto px-4">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
               Capture Your Perfect Moments
@@ -97,16 +97,13 @@ const HomePage = () => {
             </p>
           </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/30 to-purple-600/30"></div>
-        <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl"></div>
-        <div className="absolute -top-20 -right-20 w-80 h-80 bg-purple-400/20 rounded-full blur-3xl"></div>
       </div>
       
       <main className="flex-1 container mx-auto px-4 py-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* New Session Card */}
-          <Card className="shadow-lg border-2 border-photobooth-primary/20 rounded-md overflow-hidden hover:border-photobooth-primary/50 transition-all">
-            <CardHeader className="bg-blue-100/50 border-b border-photobooth-primary/10 py-4">
+          <Card className="shadow-lg border-2 border-photobooth-primary/20 rounded-xl overflow-hidden">
+            <CardHeader className="bg-blue-50 border-b border-photobooth-primary/10 py-4">
               <CardTitle className="text-xl font-bold text-photobooth-primary flex items-center">
                 <Camera className="mr-2 h-5 w-5" />
                 Start New Photo Session
@@ -121,7 +118,7 @@ const HomePage = () => {
                     placeholder="Enter customer name" 
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="border-gray-300 focus-visible:ring-photobooth-primary"
+                    className="border-gray-300 focus:ring-photobooth-primary focus:border-photobooth-primary"
                   />
                 </div>
                 
@@ -150,20 +147,20 @@ const HomePage = () => {
           </Card>
           
           {/* Previous Sessions Card */}
-          <Card className="shadow-lg border-2 border-blue-400/20 rounded-md overflow-hidden hover:border-blue-400/50 transition-all">
-            <CardHeader className="bg-blue-100/50 border-b border-blue-400/10 py-4">
+          <Card className="shadow-lg border-2 border-blue-400/20 rounded-xl overflow-hidden">
+            <CardHeader className="bg-blue-50 border-b border-blue-400/10 py-4">
               <CardTitle className="text-xl font-bold text-blue-600 flex items-center">
                 <MapPin className="mr-2 h-5 w-5" />
                 Previous Sessions
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 bg-white">
-              <div className="space-y-1">
+              <div className="space-y-4">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input 
                     placeholder="Search by name, tag or location"
-                    className="pl-9 mb-4 border-gray-300"
+                    className="pl-9 border-gray-300"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -174,7 +171,7 @@ const HomePage = () => {
                     {searchTerm ? "No matching sessions found" : "No sessions found"}
                   </div>
                 ) : (
-                  <div className="bg-white rounded-md border border-gray-200 overflow-hidden max-h-[350px] overflow-auto shadow-inner">
+                  <div className="bg-white rounded-md border border-gray-200 overflow-hidden max-h-[350px] overflow-auto shadow-sm">
                     {filteredSessions.map(session => (
                       <div 
                         key={session.id}
@@ -183,9 +180,9 @@ const HomePage = () => {
                       >
                         <div className="space-y-1">
                           <div className="font-medium text-photobooth-primary">{session.name}</div>
-                          <div className="text-sm text-gray-500 flex items-center">
+                          <div className="text-sm text-gray-500 flex items-center gap-1">
                             <span className="font-mono">{session.id.substring(0, 8)}</span>
-                            <span className="mx-1">•</span>
+                            <span>•</span>
                             <span className="capitalize">{session.location}</span>
                           </div>
                         </div>
@@ -195,6 +192,7 @@ const HomePage = () => {
                           <button
                             onClick={(e) => handleDeleteSession(session.id, e)}
                             className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded-full transition-colors"
+                            aria-label="Delete session"
                           >
                             <Trash size={16} />
                           </button>
@@ -208,9 +206,9 @@ const HomePage = () => {
           </Card>
         </div>
         
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           <Card className="bg-gradient-to-b from-photobooth-primary/5 to-transparent shadow-sm border border-photobooth-primary/10 hover:shadow-md transition-all">
-            <CardContent className="pt-6 text-center">
+            <CardContent className="pt-6 pb-5 text-center">
               <div className="rounded-full bg-photobooth-primary/10 p-3 inline-flex mb-4">
                 <Camera className="h-6 w-6 text-photobooth-primary" />
               </div>
@@ -219,7 +217,7 @@ const HomePage = () => {
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-b from-blue-400/5 to-transparent shadow-sm border border-blue-400/10 hover:shadow-md transition-all">
-            <CardContent className="pt-6 text-center">
+            <CardContent className="pt-6 pb-5 text-center">
               <div className="rounded-full bg-blue-400/10 p-3 inline-flex mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-blue-500">
                   <circle cx="12" cy="12" r="3"></circle>
@@ -232,7 +230,7 @@ const HomePage = () => {
             </CardContent>
           </Card>
           <Card className="bg-gradient-to-b from-purple-400/5 to-transparent shadow-sm border border-purple-400/10 hover:shadow-md transition-all">
-            <CardContent className="pt-6 text-center">
+            <CardContent className="pt-6 pb-5 text-center">
               <div className="rounded-full bg-purple-400/10 p-3 inline-flex mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-purple-500">
                   <rect width="20" height="14" x="2" y="3" rx="2"></rect>
