@@ -35,7 +35,7 @@ const App = () => (
             <Route path="/cart" element={<CartPage />} />
             <Route path="/session/:id" element={<SessionViewerPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/qr-scanner" element={<QRScannerPage />} />
+            <Route path="/scan" element={<QRScannerPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
