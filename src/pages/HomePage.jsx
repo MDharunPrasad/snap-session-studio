@@ -166,13 +166,13 @@ const HomePage = () => {
                   />
                 </div>
                 
-                {filteredSessions.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    {searchTerm ? "No matching sessions found" : "No sessions found"}
-                  </div>
-                ) : (
-                  <div className="bg-white rounded-md border border-gray-200 overflow-hidden max-h-[350px] overflow-auto shadow-sm">
-                    {filteredSessions.map(session => (
+                <div className="bg-white rounded-md border border-gray-200 overflow-hidden max-h-[350px] overflow-auto shadow-sm">
+                  {filteredSessions.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      {searchTerm ? "No matching sessions found" : "No sessions found"}
+                    </div>
+                  ) : (
+                    filteredSessions.map(session => (
                       <div 
                         key={session.id}
                         className="p-3 hover:bg-blue-50 cursor-pointer flex items-center justify-between border-b border-gray-100 last:border-b-0 transition-colors"
@@ -198,9 +198,9 @@ const HomePage = () => {
                           </button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
+                    ))
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
