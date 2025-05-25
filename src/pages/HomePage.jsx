@@ -83,7 +83,7 @@ const HomePage = () => {
   const activeLocations = locations ? locations.filter(loc => !loc.disabled) : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <Header />
       
       {/* Hero Section */}
@@ -101,7 +101,7 @@ const HomePage = () => {
       </div>
       
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-6 py-16">
+      <main className="container mx-auto px-6 py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
           {/* New Session Card */}
           <Card className="shadow-xl border-2 border-photobooth-primary/20 rounded-2xl overflow-hidden">
@@ -225,7 +225,7 @@ const HomePage = () => {
           </Card>
         </div>
         
-        {/* Feature Cards with Better Spacing */}
+        {/* Feature Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           <Card className="bg-gradient-to-br from-photobooth-primary/5 to-photobooth-primary/10 shadow-lg border border-photobooth-primary/20 hover:shadow-xl transition-all transform hover:scale-105">
             <CardContent className="pt-10 pb-10 px-8 text-center">
