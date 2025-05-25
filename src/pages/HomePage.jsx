@@ -83,14 +83,14 @@ const HomePage = () => {
   const activeLocations = locations ? locations.filter(loc => !loc.disabled) : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       <Header />
       
-      {/* Hero Section */}
-      <div className="w-full bg-photobooth-primary py-12">
+      {/* Hero Section - Made more visible */}
+      <div className="w-full bg-photobooth-primary py-16">
         <div className="container mx-auto px-4">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
               Capture Your Perfect Moments
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed">
@@ -101,13 +101,13 @@ const HomePage = () => {
       </div>
       
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
+      <main className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
           {/* New Session Card */}
-          <Card className="shadow-xl border-2 border-photobooth-primary/20 rounded-2xl overflow-hidden">
+          <Card className="shadow-xl border-2 border-photobooth-primary/20 rounded-2xl overflow-hidden h-fit">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-photobooth-primary/10 py-6">
-              <CardTitle className="text-2xl font-bold text-photobooth-primary flex items-center justify-center">
-                <Camera className="mr-3 h-6 w-6" />
+              <CardTitle className="text-2xl font-bold text-photobooth-primary flex items-center justify-center gap-3">
+                <Camera className="h-7 w-7" />
                 Start New Photo Session
               </CardTitle>
             </CardHeader>
@@ -155,10 +155,10 @@ const HomePage = () => {
           </Card>
           
           {/* Previous Sessions Card */}
-          <Card className="shadow-xl border-2 border-blue-400/20 rounded-2xl overflow-hidden">
+          <Card className="shadow-xl border-2 border-blue-400/20 rounded-2xl overflow-hidden h-fit">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-400/10 py-6">
-              <CardTitle className="text-2xl font-bold text-blue-600 flex items-center justify-center">
-                <MapPin className="mr-3 h-6 w-6" />
+              <CardTitle className="text-2xl font-bold text-blue-600 flex items-center justify-center gap-3">
+                <MapPin className="h-7 w-7" />
                 Previous Sessions
               </CardTitle>
             </CardHeader>
