@@ -21,11 +21,11 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <PhotoBoothProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+    <BrowserRouter>
+      <PhotoBoothProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -38,9 +38,9 @@ const App = () => (
             <Route path="/scan" element={<QRScannerPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </PhotoBoothProvider>
+        </TooltipProvider>
+      </PhotoBoothProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
